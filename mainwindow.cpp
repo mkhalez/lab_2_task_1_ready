@@ -1,10 +1,11 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include <QFile>
 #include <QStandardItemModel>
 #include <QTableView>
 #include <ctime>
 #include <QFileDialog>
+#include "validstring.h"
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -170,22 +171,39 @@ void MainWindow::Calculate()
         item->setTextAlignment(Qt::AlignCenter); // Выравнивание по центру
         our_file.model->setItem(i, 4, item);
 
-        if(!(ui->lineEdit->text().isEmpty()))
-        {
-            line = ui->lineEdit->text();
-            MyDate birthday = MyDate(line);
-            int result = birthday.DaysTillYourBithday(pointer_to_list[i]);
-            line = QString::number(result);
-            item = new QStandardItem(line);
-            item->setTextAlignment(Qt::AlignCenter); // Выравнивание по центру
-            our_file.model->setItem(i, 5, item);
-        }
-
         int delta = pointer_to_list[i].Duration(pointer_to_list[(i + 1) % our_file.GetSize()]);
         line = QString::number(delta);
         item = new QStandardItem(line);
         item->setTextAlignment(Qt::AlignCenter); // Выравнивание по центру
         our_file.model->setItem(i, 6, item);
+
+        if(!(ui->lineEdit->text().isEmpty()))
+        {
+            ValidString check_valid;
+            check_valid.SetInputDate(ui->lineEdit->text());
+
+            try {
+                if(!check_valid.ValidInputDate())
+                {
+                    throw std::invalid_argument("Invalid date format or value");
+                }
+
+
+                line = ui->lineEdit->text();
+                MyDate birthday = MyDate(line);
+                int result = birthday.DaysTillYourBithday(pointer_to_list[i]);
+                line = QString::number(result);
+                item = new QStandardItem(line);
+                item->setTextAlignment(Qt::AlignCenter); // Выравнивание по центру
+                our_file.model->setItem(i, 5, item);
+
+            } catch (const std::invalid_argument& e) {
+                pointer_to_list = nullptr;
+                continue;
+            }
+
+        }
+
         pointer_to_list = nullptr;
     }
 }
@@ -369,6 +387,10 @@ void MainWindow::DialogeWindow() {
 void MainWindow::SaveHelper()
 {
     our_file.Save();
+    QHeaderView* header_1 = ui->view->horizontalHeader();
+    QHeaderView* header_2 = ui->view->verticalHeader();
+    header_1->setSectionResizeMode(QHeaderView::Stretch);
+    header_2->setSectionResizeMode(QHeaderView::Stretch);
 }
 
 

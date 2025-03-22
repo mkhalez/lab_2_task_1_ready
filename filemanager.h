@@ -1,10 +1,11 @@
 #ifndef FILEMANAGER_H
 #define FILEMANAGER_H
 
-#include "mydate.h"
-#include <QWidget> // Добавляем для QWidget
+
+#include <QWidget>
 #include <QString>
 #include <QStandardItemModel>
+#include "mydate.h"
 
 class FileManager{
 public:
@@ -43,6 +44,7 @@ private:
     QString AddLeadingZeros(int number, int width);
 
     QWidget *parentWidget;
+
 
 };
 

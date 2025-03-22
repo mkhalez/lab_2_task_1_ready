@@ -5,6 +5,7 @@
 #include <QStandardItemModel>
 #include "filemanager.h"
 
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -37,7 +38,6 @@ private:
     void Init(QString path);
     //void OpenFileAndInit();
     FileManager our_file;
-
 
 
 

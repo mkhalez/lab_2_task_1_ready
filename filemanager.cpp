@@ -1,4 +1,5 @@
 #include "filemanager.h"
+#include "validstring.h"
 #include <QFile>
 #include <QStandardItemModel>
 #include <QTableView>
@@ -99,22 +100,21 @@ QString FileManager::AddLeadingZeros(int number, int width) {
 
 void FileManager::Save()
 {
-    for(int i = 0; i < bool_size; i++)
+    /*for(int i = 0; i < bool_size; i++)
     {
         qDebug() << tool[i];
     }
-
-    for(int i = 0; i < size; i++)
+*/
+    /*for(int i = 0; i < size; i++)
     {
         qDebug() << AddLeadingZeros(list_of_date[i].GetDay(), 2) + "." + AddLeadingZeros(list_of_date[i].GetMonth(), 2) + "." + AddLeadingZeros(list_of_date[i].GetYear(), 4);
-    }
+    }*/
 
     //qDebug() << model->rowCount();
         for(int i = 0; i < model->rowCount(); i++)
     {
         QStandardItem* item = model->item(i, 0);
         QString value = item->text();
-
 
 
         if(tool[i] == true)
@@ -135,16 +135,46 @@ void FileManager::Save()
         }
         else
         {
-            AddElement(list_of_date, size);
-            list_of_date[size - 1] = MyDate(value);
-            AppendLineToFile(path, value);
+
+            if(item && item->text().isEmpty())
+            {
+                model->removeRow(i);
+                i--;
+            }
+            else
+            {
+                ValidString check_valid;
+                check_valid.SetInputDate(value);
+
+                try{
+                    if(!check_valid.ValidInputDate())
+                    {
+                        throw std::invalid_argument("Invalid date format or value");
+                    }
+                    AddElement(list_of_date, size);
+                    list_of_date[size - 1] = MyDate(value);
+                    //AddElementBool(tool, bool_size);
+                    tool[bool_size - 1] = true;
+                    AppendLineToFile(path, value);
+
+
+                } catch (const std::invalid_argument& e){
+
+                    model->removeRow(i);
+                    i--;
+
+                }
+            }
+
         }
     }
+
     //empty line
-    for(int i = 0; i < size; i++)
+    /*for(int i = 0; i < bool_size; i++)
     {
-        qDebug() << list_of_date[i].GetYear();
+        qDebug() << tool[i];
     }
+    qDebug() << "------";*/
 
 }
 
@@ -244,6 +274,7 @@ void FileManager::AppendLineToFile(QString& filePath, QString& newLine) {
         return "";
     }
 }*/
+
 
 
 void FileManager::SetSize(int size)

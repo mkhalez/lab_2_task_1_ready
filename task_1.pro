@@ -12,12 +12,14 @@ SOURCES += \
     filemanager.cpp \
     main.cpp \
     mainwindow.cpp \
-    mydate.cpp
+    mydate.cpp \
+    validstring.cpp
 
 HEADERS += \
     filemanager.h \
     mainwindow.h \
-    mydate.h
+    mydate.h \
+    validstring.h
 
 FORMS += \
     mainwindow.ui
