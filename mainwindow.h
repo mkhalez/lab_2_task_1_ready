@@ -12,21 +12,20 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
-public:
-    MainWindow(QWidget *parent = nullptr);
+   public:
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-private:
-    Ui::MainWindow *ui;
+   private:
+    Ui::MainWindow* ui;
     //void AddElement(MyDate* &dynamic_array, int &size);
     //MyDate* list_of_date;
     //int size;
     //int bool_size;
-    QStandardItemModel* model_window;
+    QStandardItemModel* model_window_;
     QString AddLeadingZeros(int number, int width);
     //bool* tool;
     //void AddElementBool(bool* &tool, int &bool_size);
@@ -37,16 +36,13 @@ private:
     //void OpenFile();
     void Init(QString path);
     //void OpenFileAndInit();
-    FileManager our_file;
+    FileManager our_file_;
 
 
-
-private slots:
+   private slots:
     void Calculate();
     void AddLine();
     void DialogeWindow();
     void SaveHelper();
-
-
 };
-#endif // MAINWINDOW_H
+#endif	// MAINWINDOW_H

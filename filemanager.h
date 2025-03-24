@@ -2,18 +2,18 @@
 #define FILEMANAGER_H
 
 
-#include <QWidget>
-#include <QString>
 #include <QStandardItemModel>
+#include <QString>
+#include <QWidget>
 #include "mydate.h"
 
-class FileManager{
-public:
-    FileManager(); // Изменили тип параметра на QWidget*
+class FileManager {
+   public:
+    FileManager();	// Изменили тип параметра на QWidget*
     // Остальные методы
     ~FileManager();
 
-public:
+   public:
     void SetPath(QString path);
     QString GetPath();
     void ReplaceLineInFile(QString& filePath, int lineNumber, QString& newLine);
@@ -21,8 +21,8 @@ public:
     void AppendLineToFile(QString& filePath, QString& newLine);
     //QString OpenFile();
     void ReadFromFile();
-    void AddElementBool(bool* &tool, int &bool_size);
-    void AddElement(MyDate* &dynamic_array, int &size);
+    void AddElementBool(bool*& tool, int& bool_size);
+    void AddElement(MyDate*& dynamic_array, int& size);
     void Save();
     QStandardItemModel* model;
     void SetSize(int size);
@@ -35,17 +35,15 @@ public:
     void SetTool(bool start, bool* new_array = nullptr);
     void MakeNullList();
 
-private:
-    MyDate* list_of_date;
-    int size;
-    int bool_size;
-    bool* tool;
+   private:
+    MyDate* list_of_date_;
+    int size_;
+    int bool_size_;
+    bool* tool_;
 
     QString AddLeadingZeros(int number, int width);
 
-    QWidget *parentWidget;
-
-
+    QWidget* parentWidget;
 };
 
-#endif // FILEMANAGER_H
+#endif	// FILEMANAGER_H

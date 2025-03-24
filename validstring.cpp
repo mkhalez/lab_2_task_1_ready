@@ -1,43 +1,86 @@
 #include "validstring.h"
 
+const int kNumberMonthInYear = 12;
+
+const int kNumberMonth2 = 2;
+const int kNumberMonth4 = 4;
+const int kNumberMonth6 = 6;
+const int kNumberMonth9 = 9;
+const int kNumberMonth11 = 11;
+
+const int kLeapCondition100 = 100;
+const int kLeapCondition400 = 400;
+
+
+const int kLongMonth = 31;
+const int kShortMonth = 30;
+const int kLongFebruary = 29;
+const int kShortFebruary = 28;
+
+
 ValidString::ValidString() {}
 
-void ValidString::SetInputDate(QString input_date)
-{
-    this->input_date = input_date;
+void ValidString::SetInputDate(QString input_date) {
+    this->input_date_ = std::move(input_date);
 }
 
-bool ValidString::ValidInputDate()
-{
+bool ValidString::ValidInputDate() {
     // Регулярное выражение для проверки формата dd.mm.yyyy
-    static const QRegularExpression pattern(R"((\d{2})\.(\d{2})\.(\d{4}))");
-    if (!pattern.match(input_date).hasMatch()) {
+    static const QRegularExpression kPattern(R"((\d{2})\.(\d{2})\.(\d{4}))");
+    if (!kPattern.match(input_date_).hasMatch()) {
         return false;
     }
 
     bool ok;
-    int day = input_date.mid(0, 2).toInt(&ok);
-    if (!ok) return false;
+    int day = input_date_.mid(0, 2).toInt(&ok);
 
-    int month = input_date.mid(3, 2).toInt(&ok);
-    if (!ok) return false;
 
-    int year = input_date.mid(6, 4).toInt(&ok);
-    if (!ok) return false;
-
-    if (month < 1 || month > 12) return false;
-
-    if (day < 1 || day > 31) return false;
-
-    if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30) {
+    if (!ok) {
         return false;
     }
 
-    if (month == 2) {
+    int month = input_date_.mid(3, 2).toInt(&ok);
+
+
+    if (!ok) {
+        return false;
+    }
+
+    int year = input_date_.mid(6, 4).toInt(&ok);
+
+
+    if (!ok) {
+        return false;
+    }
+
+
+    if (month < 1 || month > kNumberMonthInYear) {
+        return false;
+    }
+
+
+    if (day < 1 || day > kLongMonth) {
+        return false;
+    }
+
+    if ((month == kNumberMonth4 || month == kNumberMonth6 ||
+         month == kNumberMonth9 || month == kNumberMonth11) &&
+        day > kShortMonth) {
+        {
+            return false;
+        }
+    }
+
+
+    if (month == kNumberMonth2) {
         if (isLeapYear(year)) {
-            if (day > 29) return false;
+            if (day > kLongFebruary) {
+                return false;
+            }
         } else {
-            if (day > 28) return false;
+            if (day > kShortFebruary) {
+                return false;
+            }
         }
     }
 
@@ -46,5 +89,6 @@ bool ValidString::ValidInputDate()
 
 
 bool ValidString::isLeapYear(int year) {
-    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    return (year % 4 == 0 && year % kLeapCondition100 != 0) ||
+           (year % kLeapCondition400 == 0);
 }

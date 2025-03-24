@@ -3,28 +3,27 @@
 
 #include <QString>
 
-class MyDate
-{
-private:
-    int day;
-    int month;
-    int year;
-public:
+class MyDate {
+   private:
+    int day_;
+    int month_;
+    int year_;
+
+   public:
     MyDate(int day, int month, int year);
-    MyDate(QString date);
-    MyDate()
-        {
+    MyDate(const QString& date);
+    MyDate() {
 
-        };
+    };
 
-private:
+   private:
     int NumberDayInMonth(int month, int year);
     int DayOfWeek(int day, int month, int year);
     int DayFromStart(int day, int month, int year);
     int DayFromJanury(MyDate date);
     int DayFromJanury(int day, int month, int year);
 
-public:
+   public:
     bool IsLeap(int year);
     bool IsLeap();
     MyDate NextDay();
@@ -35,8 +34,6 @@ public:
     int GetYear();
     int GetMonth();
     int GetDay();
-
-
 };
 
-#endif // MYDATE_H
+#endif	// MYDATE_H

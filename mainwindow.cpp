@@ -1,59 +1,72 @@
+#include "mainwindow.h"
 #include <QFile>
+#include <QFileDialog>
 #include <QStandardItemModel>
 #include <QTableView>
 #include <ctime>
-#include <QFileDialog>
-#include "validstring.h"
-#include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "validstring.h"
+
+const int kCols = 7;
+const int kCol0 = 0;
+const int kCol1 = 1;
+const int kCol2 = 2;
+const int kCol3 = 3;
+const int kCol4 = 4;
+const int kCol5 = 5;
+const int kCol6 = 6;
+const int kStartYear = 1900;
+const int kDecimal = 10;
 
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-    //, list_of_date(nullptr)
-    //, tool(nullptr)
-    //, path("/home/mkh-alez/oaip/lab_2/task_1/example.txt")  // Инициализация path
+MainWindow::MainWindow(QWidget* parent)
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow)
+//, list_of_date(nullptr)
+//, tool(nullptr)
+//, path("/home/mkh-alez/oaip/lab_2/task_1/example.txt")  // Инициализация path
 {
     ui->setupUi(this);
     ui->currentDate->setReadOnly(true);
     ui->currentDate->setText(CurrentDate());
 
 
-    Init(our_file.GetPath());  // Передаем path в Init
+    Init(our_file_.GetPath());	// Передаем path в Init
 
-    connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::Calculate);
+    connect(ui->pushButton, &QPushButton::clicked, this,
+            &MainWindow::Calculate);
     connect(ui->addButton, &QPushButton::clicked, this, &MainWindow::AddLine);
-    connect(ui->saveButton, &QPushButton::clicked, this, &MainWindow::SaveHelper);
-    connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::DialogeWindow);
+    connect(ui->saveButton, &QPushButton::clicked, this,
+            &MainWindow::SaveHelper);
+    connect(ui->openButton, &QPushButton::clicked, this,
+            &MainWindow::DialogeWindow);
 }
 
-void MainWindow::Init(QString new_path)
-{
-    our_file.SetPath(new_path);
+void MainWindow::Init(QString new_path) {
+    our_file_.SetPath(std::move(new_path));
 
-    our_file.model =  new QStandardItemModel(0, 7);
+    our_file_.model = new QStandardItemModel(0, kCols);
 
     // установка заголовков таблицы
-    our_file.model->setHeaderData(0, Qt::Horizontal, "Date");
-    our_file.model->setHeaderData(1, Qt::Horizontal, "Next day");
-    our_file.model->setHeaderData(2, Qt::Horizontal, "Previous day");
-    our_file.model->setHeaderData(3, Qt::Horizontal, "Is leap");
-    our_file.model->setHeaderData(4, Qt::Horizontal, "Number of week");
-    our_file.model->setHeaderData(5, Qt::Horizontal, "Days till birthday");
-    our_file.model->setHeaderData(6, Qt::Horizontal, "Duraction");
+    our_file_.model->setHeaderData(kCol0, Qt::Horizontal, "Date");
+    our_file_.model->setHeaderData(kCol1, Qt::Horizontal, "Next day");
+    our_file_.model->setHeaderData(kCol2, Qt::Horizontal, "Previous day");
+    our_file_.model->setHeaderData(kCol3, Qt::Horizontal, "Is leap");
+    our_file_.model->setHeaderData(kCol4, Qt::Horizontal, "Number of week");
+    our_file_.model->setHeaderData(kCol5, Qt::Horizontal, "Days till birthday");
+    our_file_.model->setHeaderData(kCol6, Qt::Horizontal, "Duraction");
 
-    ui->view->setModel(our_file.model);
-
-
-    our_file.SetSize(1);
-    our_file.SetList();
-
-    our_file.SetBoolSize(0);
-    our_file.SetTool(true);
+    ui->view->setModel(our_file_.model);
 
 
-    our_file.ReadFromFile();
+    our_file_.SetSize(1);
+    our_file_.SetList();
+
+    our_file_.SetBoolSize(0);
+    our_file_.SetTool(true);
+
+
+    our_file_.ReadFromFile();
 
     /*QFile inputFile(path);
     if(inputFile.open(QIODevice::ReadOnly))
@@ -90,11 +103,9 @@ void MainWindow::Init(QString new_path)
     QHeaderView* header_2 = ui->view->verticalHeader();
     header_1->setSectionResizeMode(QHeaderView::Stretch);
     header_2->setSectionResizeMode(QHeaderView::Stretch);
-
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
     delete ui;
 }
 
@@ -130,61 +141,61 @@ MainWindow::~MainWindow()
 }
 */
 
-void MainWindow::Calculate()
-{
-    for(int i = 0; i < our_file.GetSize(); i++)
-    {
+void MainWindow::Calculate() {
+    for (int i = 0; i < our_file_.GetSize(); i++) {
         MyDate coming_day;
-        MyDate* pointer_to_list = our_file.GetList();
+        MyDate* pointer_to_list = our_file_.GetList();
         coming_day = pointer_to_list[i].NextDay();
-        QString line = AddLeadingZeros(coming_day.GetDay(), 2) + "." + AddLeadingZeros(coming_day.GetMonth(), 2) + "." + AddLeadingZeros(coming_day.GetYear(), 4);
+        QString line = AddLeadingZeros(coming_day.GetDay(), 2) + "." +
+                       AddLeadingZeros(coming_day.GetMonth(), 2) + "." +
+                       AddLeadingZeros(coming_day.GetYear(), 4);
         QStandardItem* item = new QStandardItem(line);
-        item->setTextAlignment(Qt::AlignCenter); // Выравнивание по центру
-        our_file.model->setItem(i, 1, item);
+        item->setTextAlignment(Qt::AlignCenter);  // Выравнивание по центру
+        our_file_.model->setItem(i, 1, item);
 
 
         MyDate previous_day;
         previous_day = pointer_to_list[i].PreviousDay();
-        line = AddLeadingZeros(previous_day.GetDay(), 2) + "." + AddLeadingZeros(previous_day.GetMonth(), 2) + "." + AddLeadingZeros(previous_day.GetYear(), 4);
+        line = AddLeadingZeros(previous_day.GetDay(), 2) + "." +
+               AddLeadingZeros(previous_day.GetMonth(), 2) + "." +
+               AddLeadingZeros(previous_day.GetYear(), 4);
         item = new QStandardItem(line);
-        item->setTextAlignment(Qt::AlignCenter); // Выравнивание по центру
-        our_file.model->setItem(i, 2, item);
+        item->setTextAlignment(Qt::AlignCenter);  // Выравнивание по центру
+        our_file_.model->setItem(i, kCol2, item);
 
         bool is_leap_day;
         is_leap_day = pointer_to_list[i].IsLeap();
-        if(is_leap_day)
-        {
+
+
+        if (is_leap_day) {
             line = "Yes";
-        }
-        else
-        {
+        } else {
             line = "No";
         }
         item = new QStandardItem(line);
-        item->setTextAlignment(Qt::AlignCenter); // Выравнивание по центру
-        our_file.model->setItem(i, 3, item);
+        item->setTextAlignment(Qt::AlignCenter);  // Выравнивание по центру
+        our_file_.model->setItem(i, kCol3, item);
 
 
         short number_of_week = pointer_to_list[i].WeekNumber();
         line = QString::number(number_of_week);
         item = new QStandardItem(line);
-        item->setTextAlignment(Qt::AlignCenter); // Выравнивание по центру
-        our_file.model->setItem(i, 4, item);
+        item->setTextAlignment(Qt::AlignCenter);  // Выравнивание по центру
+        our_file_.model->setItem(i, kCol4, item);
 
-        int delta = pointer_to_list[i].Duration(pointer_to_list[(i + 1) % our_file.GetSize()]);
+        int delta = pointer_to_list[i].Duration(
+            pointer_to_list[(i + 1) % our_file_.GetSize()]);
         line = QString::number(delta);
         item = new QStandardItem(line);
-        item->setTextAlignment(Qt::AlignCenter); // Выравнивание по центру
-        our_file.model->setItem(i, 6, item);
+        item->setTextAlignment(Qt::AlignCenter);  // Выравнивание по центру
+        our_file_.model->setItem(i, kCol6, item);
 
-        if(!(ui->lineEdit->text().isEmpty()))
-        {
+        if (!(ui->lineEdit->text().isEmpty())) {
             ValidString check_valid;
             check_valid.SetInputDate(ui->lineEdit->text());
 
             try {
-                if(!check_valid.ValidInputDate())
-                {
+                if (!check_valid.ValidInputDate()) {
                     throw std::invalid_argument("Invalid date format or value");
                 }
 
@@ -194,14 +205,14 @@ void MainWindow::Calculate()
                 int result = birthday.DaysTillYourBithday(pointer_to_list[i]);
                 line = QString::number(result);
                 item = new QStandardItem(line);
-                item->setTextAlignment(Qt::AlignCenter); // Выравнивание по центру
-                our_file.model->setItem(i, 5, item);
+                item->setTextAlignment(
+                    Qt::AlignCenter);  // Выравнивание по центру
+                our_file_.model->setItem(i, kCol5, item);
 
             } catch (const std::invalid_argument& e) {
                 pointer_to_list = nullptr;
                 continue;
             }
-
         }
 
         pointer_to_list = nullptr;
@@ -209,18 +220,17 @@ void MainWindow::Calculate()
 }
 
 QString MainWindow::AddLeadingZeros(int number, int width) {
-    return QString("%1").arg(number, width, 10, QChar('0'));
+    return QString("%1").arg(number, width, kDecimal, QChar('0'));
 }
 
-void MainWindow::AddLine()
-{
-    QList<QStandardItem*> newRow;
-    newRow << new QStandardItem();
+void MainWindow::AddLine() {
+    QList<QStandardItem*> new_row;
+    new_row << new QStandardItem();
 
     // Добавляем строку в модель
-    our_file.model->appendRow(newRow);
+    our_file_.model->appendRow(new_row);
 
-    bool* tool_pointer = our_file.GetTool();
+    /*bool* tool_pointer = our_file.GetTool();
     int bool_size_tool = our_file.GetBoolSize();
 
     our_file.AddElementBool(tool_pointer, bool_size_tool);
@@ -230,7 +240,7 @@ void MainWindow::AddLine()
     our_file.SetTool(false, tool_pointer);
 
     tool_pointer[bool_size_tool - 1] = false;
-    tool_pointer = nullptr;
+    tool_pointer = nullptr;*/
 }
 
 /*void MainWindow::Save()
@@ -273,12 +283,13 @@ void MainWindow::AddLine()
 
 QString MainWindow::CurrentDate() {
     std::time_t now = std::time(nullptr);
-    std::tm* localTime = std::localtime(&now);
+    std::tm* local_time = std::localtime(&now);
 
-    int day = localTime->tm_mday;
-    int month = localTime->tm_mon + 1;
-    int year = localTime->tm_year + 1900;
-    return AddLeadingZeros(day, 2) + "." +  AddLeadingZeros(month, 2) + "." + AddLeadingZeros(year, 4);
+    int day = local_time->tm_mday;
+    int month = local_time->tm_mon + 1;
+    int year = local_time->tm_year + kStartYear;
+    return AddLeadingZeros(day, 2) + "." + AddLeadingZeros(month, 2) + "." +
+           AddLeadingZeros(year, 4);
 }
 
 /*
@@ -298,6 +309,8 @@ void MainWindow::ReplaceLineInFile(const QString& filePath, int lineNumber, cons
     while (!stream.atEnd()) {
         startPos = stream.pos(); // Запоминаем начало строки
         QString line = stream.readLine(); // Читаем строку
+
+
         if (currentLine == lineNumber) {
             // Проверяем, что новая строка имеет ту же длину
             if (line.size() != newLine.size()) {
@@ -320,6 +333,8 @@ void MainWindow::ReplaceLineInFile(const QString& filePath, int lineNumber, cons
     }
 
     // Если строка не найдена, добавляем новую строку в конец файла
+
+
     if (currentLine == lineNumber) {
         stream << newLine << "\n"; // Добавляем новую строку
     } else {
@@ -348,52 +363,50 @@ void MainWindow::AppendLineToFile(const QString& filePath, const QString& newLin
 
 void MainWindow::DialogeWindow() {
     // Создаем диалог выбора файла
-    QString filePath = QFileDialog::getOpenFileName(
-        this,                   // Родительское окно
-        tr("Открыть файл"),     // Заголовок диалога
-        "",                     // Начальная директория (пустая строка означает текущую директорию)
-        tr("Текстовые файлы (*.txt);;Все файлы (*)") // Фильтр файлов
-        );
+    QString file_path = QFileDialog::getOpenFileName(
+        this,				 // Родительское окно
+        tr("Открыть файл"),	 // Заголовок диалога
+        "",	 // Начальная директория (пустая строка означает текущую директорию)
+        tr("Текстовые файлы (*.txt);;Все файлы (*)")  // Фильтр файлов
+    );
 
     // Если пользователь выбрал файл
-    if (!filePath.isEmpty()) {
-        qDebug() << "Выбранный файл:" << filePath;
+    if (!file_path.isEmpty()) {
+        qDebug() << "Выбранный файл:" << file_path;
 
-        MyDate* pointer_list = our_file.GetList();
-        bool* pointer_tool = our_file.GetTool();
+        MyDate* pointer_list = our_file_.GetList();
+        bool* pointer_tool = our_file_.GetTool();
 
         // Очищаем текущие данные
+
+
         if (pointer_list) {
             delete[] pointer_list;
             pointer_list = nullptr;
         }
+
+
         if (pointer_tool) {
             delete[] pointer_tool;
             pointer_tool = nullptr;
         }
 
-        our_file.MakeNullList();
+        our_file_.MakeNullList();
 
-        our_file.model->clear();
+        our_file_.model->clear();
 
         // Инициализируем данные из нового файла
-        our_file.SetPath(filePath);
-        Init(our_file.GetPath());
+        our_file_.SetPath(file_path);
+        Init(our_file_.GetPath());
     } else {
         qDebug() << "Файл не выбран.";
     }
 }
 
-void MainWindow::SaveHelper()
-{
-    our_file.Save();
+void MainWindow::SaveHelper() {
+    our_file_.Save();
     QHeaderView* header_1 = ui->view->horizontalHeader();
     QHeaderView* header_2 = ui->view->verticalHeader();
     header_1->setSectionResizeMode(QHeaderView::Stretch);
     header_2->setSectionResizeMode(QHeaderView::Stretch);
 }
-
-
-
-
-

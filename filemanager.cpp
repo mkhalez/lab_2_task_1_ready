@@ -1,74 +1,71 @@
 #include "filemanager.h"
-#include "validstring.h"
 #include <QFile>
+#include <QFileDialog>
 #include <QStandardItemModel>
 #include <QTableView>
 #include <ctime>
-#include <QFileDialog>
+#include "validstring.h"
+
+const int kDecimal = 10;
 
 FileManager::FileManager() {
-    size = 1;
+    size_ = 1;
 
-    list_of_date = new MyDate[size];
+    list_of_date_ = new MyDate[size_];
 
-    bool_size = 0;
-    tool = new bool[bool_size];
+    bool_size_ = 0;
+    tool_ = new bool[bool_size_];
     path = "/home/mkh-alez/oaip/lab_2/task_1/example.txt";
 }
 
-FileManager::~FileManager()
-{
-    delete[] list_of_date;
+FileManager::~FileManager() {
+    delete[] list_of_date_;
 }
 
-void FileManager::SetPath(QString path)
-{
-    this->path = path;
+void FileManager::SetPath(QString path) {
+    this->path = std::move(path);
 }
 
-QString FileManager::GetPath()
-{
+QString FileManager::GetPath() {
     return path;
 }
 
-void FileManager::ReadFromFile()
-{
-    QFile inputFile(path);
-    if(inputFile.open(QIODevice::ReadOnly))
-    {
-        QTextStream in(&inputFile);
+void FileManager::ReadFromFile() {
+    QFile input_file(path);
+    if (input_file.open(QIODevice::ReadOnly)) {
+        QTextStream in(&input_file);
         int i = 0;
-        while(!in.atEnd())
-        {
+        while (!in.atEnd()) {
 
             QString line = in.readLine();
 
-            if(i > 0) AddElement(list_of_date, size);
-            list_of_date[i] = MyDate(line);
+            if (i > 0) {
+                AddElement(list_of_date_, size_);
+            }
+            list_of_date_[i] = MyDate(line);
 
 
-            QList<QStandardItem*> newRow;
-            newRow << new QStandardItem(line);
+            QList<QStandardItem*> new_row;
+            new_row << new QStandardItem(line);
 
             // Добавляем строку в модель
-            model->appendRow(newRow);
+            model->appendRow(new_row);
 
-            AddElementBool(tool, bool_size);
-            tool[i] = true;
+            AddElementBool(tool_, bool_size_);
+            tool_[i] = true;
 
             i++;
         }
 
-        inputFile.close();
+        input_file.close();
     }
 }
 
-void FileManager::AddElement(MyDate* &dynamic_array, int& size)
-{
-    MyDate *new_array = new MyDate[size + 1];
+void FileManager::AddElement(MyDate*& dynamic_array, int& size) {
+    MyDate* new_array = new MyDate[size + 1];
 
-    for(int i = 0; i < size; i++)
-    {
+
+    for (int i = 0; i < size; i++) {
         new_array[i] = dynamic_array[i];
     }
     delete[] dynamic_array;
@@ -79,12 +76,11 @@ void FileManager::AddElement(MyDate* &dynamic_array, int& size)
 }
 
 
-void FileManager::AddElementBool(bool* &tool, int& bool_size)
-{
-    bool *new_tool = new bool[bool_size + 1];
+void FileManager::AddElementBool(bool*& tool, int& bool_size) {
+    bool* new_tool = new bool[bool_size + 1];
 
-    for(int i = 0; i < bool_size; i++)
-    {
+
+    for (int i = 0; i < bool_size; i++) {
         new_tool[i] = tool[i];
     }
     delete[] tool;
@@ -94,12 +90,11 @@ void FileManager::AddElementBool(bool* &tool, int& bool_size)
 }
 
 QString FileManager::AddLeadingZeros(int number, int width) {
-    return QString("%1").arg(number, width, 10, QChar('0'));
+    return QString("%1").arg(number, width, kDecimal, QChar('0'));
 }
 
 
-void FileManager::Save()
-{
+void FileManager::Save() {
     /*for(int i = 0; i < bool_size; i++)
     {
         qDebug() << tool[i];
@@ -111,61 +106,54 @@ void FileManager::Save()
     }*/
 
     //qDebug() << model->rowCount();
-        for(int i = 0; i < model->rowCount(); i++)
-    {
+    for (int i = 0; i < model->rowCount(); i++) {
         QStandardItem* item = model->item(i, 0);
         QString value = item->text();
 
 
-        if(tool[i] == true)
-        {
-            int day = list_of_date[i].GetDay();
-            int month = list_of_date[i].GetMonth();
-            int year = list_of_date[i].GetYear();
+        if (tool_[i] == true) {
+            int day = list_of_date_[i].GetDay();
+            int month = list_of_date_[i].GetMonth();
+            int year = list_of_date_[i].GetYear();
 
-            QString content_of_date = AddLeadingZeros(day, 2) + "." + AddLeadingZeros(month, 2) + "." + AddLeadingZeros(year, 4);
+            QString content_of_date = AddLeadingZeros(day, 2) + "." +
+                                      AddLeadingZeros(month, 2) + "." +
+                                      AddLeadingZeros(year, 4);
 
 
-            if(content_of_date == value) continue;
-            else
-            {
-                list_of_date[i] = MyDate(value);
+            if (content_of_date == value) {
+                continue;
+            } else {
+                list_of_date_[i] = MyDate(value);
                 ReplaceLineInFile(path, i, value);
             }
-        }
-        else
-        {
+        } else {
 
-            if(item && item->text().isEmpty())
-            {
+            if (item && item->text().isEmpty()) {
                 model->removeRow(i);
                 i--;
-            }
-            else
-            {
+            } else {
                 ValidString check_valid;
                 check_valid.SetInputDate(value);
 
-                try{
-                    if(!check_valid.ValidInputDate())
-                    {
-                        throw std::invalid_argument("Invalid date format or value");
+                try {
+                    if (!check_valid.ValidInputDate()) {
+                        throw std::invalid_argument(
+                            "Invalid date format or value");
                     }
-                    AddElement(list_of_date, size);
-                    list_of_date[size - 1] = MyDate(value);
-                    //AddElementBool(tool, bool_size);
-                    tool[bool_size - 1] = true;
+                    AddElement(list_of_date_, size_);
+                    list_of_date_[size_ - 1] = MyDate(value);
+                    AddElementBool(tool_, bool_size_);
+                    tool_[bool_size_ - 1] = true;
                     AppendLineToFile(path, value);
 
 
-                } catch (const std::invalid_argument& e){
+                } catch (const std::invalid_argument& e) {
 
                     model->removeRow(i);
                     i--;
-
                 }
             }
-
         }
     }
 
@@ -175,10 +163,10 @@ void FileManager::Save()
         qDebug() << tool[i];
     }
     qDebug() << "------";*/
-
 }
 
-void FileManager::ReplaceLineInFile(QString& filePath, int lineNumber, QString& newLine) {
+void FileManager::ReplaceLineInFile(QString& filePath, int lineNumber,
+                                    QString& newLine) {
     // Открываем файл для чтения и записи
     QFile file(filePath);
     if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
@@ -187,23 +175,26 @@ void FileManager::ReplaceLineInFile(QString& filePath, int lineNumber, QString& 
     }
 
     QTextStream stream(&file);
-    int currentLine = 0;
-    int startPos = 0;
+    int current_line = 0;
+    int start_pos = 0;
 
     // Ищем нужную строку
     while (!stream.atEnd()) {
-        startPos = stream.pos(); // Запоминаем начало строки
-        QString line = stream.readLine(); // Читаем строку
-        if (currentLine == lineNumber) {
+        start_pos = stream.pos();		   // Запоминаем начало строки
+        QString line = stream.readLine();  // Читаем строку
+
+
+        if (current_line == lineNumber) {
             // Проверяем, что новая строка имеет ту же длину
             if (line.size() != newLine.size()) {
-                qWarning() << "Новая строка должна иметь ту же длину, что и старая.";
+                qWarning()
+                    << "Новая строка должна иметь ту же длину, что и старая.";
                 file.close();
                 return;
             }
 
             // Перемещаемся в начало строки
-            file.seek(startPos);
+            file.seek(start_pos);
 
             // Записываем новую строку
             stream << newLine;
@@ -212,12 +203,14 @@ void FileManager::ReplaceLineInFile(QString& filePath, int lineNumber, QString& 
             file.close();
             return;
         }
-        currentLine++; // Переходим к следующей строке
+        current_line++;	 // Переходим к следующей строке
     }
 
     // Если строка не найдена, добавляем новую строку в конец файла
-    if (currentLine == lineNumber) {
-        stream << newLine << "\n"; // Добавляем новую строку
+
+
+    if (current_line == lineNumber) {
+        stream << newLine << "\n";	// Добавляем новую строку
     } else {
         qWarning() << "Некорректный номер строки:" << lineNumber;
     }
@@ -230,12 +223,12 @@ void FileManager::AppendLineToFile(QString& filePath, QString& newLine) {
     QFile file(filePath);
     if (!file.open(QIODevice::Append | QIODevice::Text)) {
         qWarning() << "Не удалось открыть файл для добавления:" << filePath;
-        return ;
+        return;
     }
 
     // Записываем новую строку в конец файла
     QTextStream out(&file);
-    out << newLine << "\n"; // Добавляем новую строку и символ новой строки
+    out << newLine << "\n";	 // Добавляем новую строку и символ новой строки
     file.close();
 
     return;
@@ -255,10 +248,14 @@ void FileManager::AppendLineToFile(QString& filePath, QString& newLine) {
         qDebug() << "Выбранный файл:" << filePath;
 
         // Очищаем текущие данные
+
+
         if (list_of_date) {
             delete[] list_of_date;
             list_of_date = nullptr;
         }
+
+
         if (tool) {
             delete[] tool;
             tool = nullptr;
@@ -276,75 +273,45 @@ void FileManager::AppendLineToFile(QString& filePath, QString& newLine) {
 }*/
 
 
-
-void FileManager::SetSize(int size)
-{
-    this->size = size;
+void FileManager::SetSize(int size) {
+    this->size_ = size;
 }
 
-int FileManager::GetSize()
-{
-    return size;
+int FileManager::GetSize() {
+    return size_;
 }
 
-void FileManager::SetBoolSize(int bool_size)
-{
-    this->bool_size = bool_size;
+void FileManager::SetBoolSize(int bool_size) {
+    this->bool_size_ = bool_size;
 }
 
-int FileManager::GetBoolSize()
-{
-    return bool_size;
+int FileManager::GetBoolSize() {
+    return bool_size_;
 }
 
-MyDate* FileManager::GetList()
-{
-    return list_of_date;
+MyDate* FileManager::GetList() {
+    return list_of_date_;
 }
 
-void FileManager::SetList()
-{
-    list_of_date = new MyDate[size];
+void FileManager::SetList() {
+    list_of_date_ = new MyDate[size_];
 }
 
-void FileManager::SetTool(bool start, bool* new_array)
-{
-    if(start)
-    {
-        tool = new bool[bool_size];
-    }
-    else
-    {
-        tool = new_array;
+void FileManager::SetTool(bool start, bool* new_array) {
+
+
+    if (start) {
+        tool_ = new bool[bool_size_];
+    } else {
+        tool_ = new_array;
     }
 }
 
-bool* FileManager::GetTool()
-{
-    return tool;
+bool* FileManager::GetTool() {
+    return tool_;
 }
 
-void FileManager::MakeNullList()
-{
-    list_of_date = nullptr;
-    tool = nullptr;
+void FileManager::MakeNullList() {
+    list_of_date_ = nullptr;
+    tool_ = nullptr;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
